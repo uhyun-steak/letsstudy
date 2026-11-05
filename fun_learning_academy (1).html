@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fun Learning Academy 🌈</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-heading: 'Fredoka', cursive, sans-serif;
+    --font-body: 'Nunito', sans-serif;
+  }
+  
+  body {
+    font-family: var(--font-body);
+    background: linear-gradient(135deg, #e0f2fe 0%, #f3e8ff 40%, #fce7f3 70%, #fef3c7 100%);
+    background-attachment: fixed;
+    color: #2d3748;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-heading {
+    font-family: var(--font-heading);
+  }
+
+  /* Custom Floating Animations for Mascots */
+  @keyframes floatSlow {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+  }
+
+  @keyframes bounceCute {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px) scale(1.03); }
+  }
+
+  @keyframes earWiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+  }
+
+  @keyframes tailWag {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(12deg); }
+  }
+
+  @keyframes wobbleWrong {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px) rotate(-3deg); }
+    40%, 80% { transform: translateX(8px) rotate(3deg); }
+  }
+
+  @keyframes popSuccess {
+    0% { transform: scale(0.9); opacity: 0.8; }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .anim-float { animation: floatSlow 4s ease-in-out infinite; }
+  .anim-bounce { animation: bounceCute 2.5s ease-in-out infinite; }
+  .anim-wiggle { animation: earWiggle 3s ease-in-out infinite; }
+  .anim-tail { transform-origin: bottom center; animation: tailWag 1.8s ease-in-out infinite; }
+  .anim-wobble { animation: wobbleWrong 0.5s ease-in-out; }
+  .anim-pop { animation: popSuccess 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+  /* Cloud & Bubble Styling */
+  .cloud-card {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    border: 4px solid #ffffff;
+    box-shadow: 0 12px 32px -8px rgba(120, 100, 180, 0.15), 0 4px 12px rgba(0,0,0,0.05);
+  }
+
+  .btn-bubble {
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 6px 0px rgba(0,0,0,0.12);
+  }
+  .btn-bubble:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 9px 0px rgba(0,0,0,0.12);
+  }
+  .btn-bubble:active:not(:disabled) {
+    transform: translateY(2px) scale(0.98);
+    box-shadow: 0 3px 0px rgba(0,0,0,0.12);
+  }
+
+  /* Canvas Confetti Layer */
+  #confetti-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 99;
+  }
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<canvas id="confetti-canvas"></canvas>
+
+<!-- Top Header Navigation -->
+<header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b-4 border-purple-200 shadow-md">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+    <!-- Brand Title -->
+    <div onclick="go('home')" class="flex items-center gap-3 cursor-pointer group">
+      <div class="w-12 h-12 bg-purple-500 rounded-2xl flex items-center justify-center text-2xl shadow-lg group-hover:rotate-12 transition-transform">
+        🌈
+      </div>
+      <span class="font-heading text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-500 to-amber-500 bg-clip-text text-transparent">
+        Fun Learning Academy
+      </span>
+    </div>
+
+    <!-- Audio & Navigation Controls -->
+    <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+      <!-- Mute/Unmute Audio Control -->
+      <button id="audio-toggle-btn" onclick="toggleAudio()" class="btn-bubble bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-3 py-2 rounded-2xl flex items-center gap-1.5 text-sm sm:text-base border-2 border-amber-200">
+        <span id="audio-icon">🎵</span>
+        <span id="audio-text">Music ON</span>
+      </button>
+
+      <!-- Points Display Pill -->
+      <div class="bg-amber-100 border-2 border-amber-300 rounded-2xl px-4 py-2 font-black text-amber-800 text-base sm:text-lg flex items-center gap-1.5 shadow-sm">
+        <span class="text-xl animate-bounce">⭐</span>
+        <span id="points">0</span>
+        <span class="text-xs text-amber-600 font-bold uppercase tracking-wider ml-0.5">pts</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Navigation Bar -->
+  <nav class="max-w-6xl mx-auto px-4 pb-3 flex justify-center sm:justify-start gap-2 overflow-x-auto">
+    <button data-page="home" onclick="go('home')" class="navbtn btn-bubble bg-purple-600 text-white font-extrabold px-4 py-2 rounded-xl text-sm sm:text-base">
+      🏠 Home
+    </button>
+    <button data-page="progress" onclick="go('progress')" class="navbtn btn-bubble bg-purple-100 hover:bg-purple-200 text-purple-800 font-extrabold px-4 py-2 rounded-xl text-sm sm:text-base">
+      📈 Progress
+    </button>
+    <button data-page="shop" onclick="go('shop')" class="navbtn btn-bubble bg-purple-100 hover:bg-purple-200 text-purple-800 font-extrabold px-4 py-2 rounded-xl text-sm sm:text-base">
+      🎁 Prize Shop
+    </button>
+    <button data-page="rewards" onclick="go('rewards')" class="navbtn btn-bubble bg-purple-100 hover:bg-purple-200 text-purple-800 font-extrabold px-4 py-2 rounded-xl text-sm sm:text-base">
+      🏆 My Rewards
+    </button>
+  </nav>
+</header>
+
+<!-- Main Dynamic Content Container -->
+<main id="app" class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full"></main>
+
+<!-- Footer Banner -->
+<footer class="mt-auto bg-white/60 backdrop-blur-sm border-t-2 border-purple-100 py-4 text-center text-purple-700 font-bold text-sm sm:text-base">
+  <p>Learn a little, try a lot, and celebrate every step! 🌟✨</p>
+</footer>
+
+<!-- Custom Dialog Modal (Replaces browser alert/confirm) -->
+<div id="custom-modal" class="hidden fixed inset-0 z-50 bg-purple-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="cloud-card max-w-md w-full rounded-3xl p-6 text-center shadow-2xl border-4 border-amber-300 anim-pop">
+    <div id="modal-icon" class="text-5xl mb-3">🎉</div>
+    <h3 id="modal-title" class="text-2xl font-black text-purple-900 mb-2">Notice</h3>
+    <p id="modal-msg" class="text-purple-700 text-base font-bold mb-6"></p>
+    <div id="modal-actions" class="flex justify-center gap-3"></div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   WEB AUDIO API SYNTHESIZER MODULE
+   ========================================================================== */
+let audioCtx = null;
+let isAudioMuted = false;
+let bgmInterval = null;
+let bgmStep = 0;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+// Background Music Chime Sequencer
+const bgmNotes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 440.00, 349.23, 392.00, 523.25, 659.25, 523.25];
+function startBGM() {
+  if (bgmInterval || isAudioMuted) return;
+  bgmInterval = setInterval(() => {
+    if (isAudioMuted || !audioCtx) return;
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = bgmNotes[bgmStep % bgmNotes.length];
+      gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.65);
+      bgmStep++;
+    } catch(e){}
+  }, 750);
+}
+
+function stopBGM() {
+  if (bgmInterval) {
+    clearInterval(bgmInterval);
+    bgmInterval = null;
+  }
+}
+
+function toggleAudio() {
+  initAudio();
+  isAudioMuted = !isAudioMuted;
+  const icon = document.getElementById('audio-icon');
+  const text = document.getElementById('audio-text');
+  const btn = document.getElementById('audio-toggle-btn');
+  
+  if (isAudioMuted) {
+    stopBGM();
+    icon.textContent = '🔇';
+    text.textContent = 'Music OFF';
+    btn.classList.replace('bg-amber-400', 'bg-gray-300');
+  } else {
+    startBGM();
+    icon.textContent = '🎵';
+    text.textContent = 'Music ON';
+    btn.classList.replace('bg-gray-300', 'bg-amber-400');
+    playClickSound();
+  }
+}
+
+// Sound Effects Generators
+function playClickSound() {
+  if (isAudioMuted) return;
+  initAudio();
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.09);
+  } catch(e){}
+}
+
+function playCorrectSound() {
+  if (isAudioMuted) return;
+  initAudio();
+  const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+  notes.forEach((freq, idx) => {
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      const startTime = audioCtx.currentTime + (idx * 0.09);
+      gain.gain.setValueAtTime(0.15, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.2);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(startTime);
+      osc.stop(startTime + 0.22);
+    } catch(e){}
+  });
+}
+
+function playWrongSound() {
+  if (isAudioMuted) return;
+  initAudio();
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.25);
+    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.26);
+  } catch(e){}
+}
+
+function playFanfareSound() {
+  if (isAudioMuted) return;
+  initAudio();
+  const arpeggio = [440, 554.37, 659.25, 880, 659.25, 880, 1108.73];
+  arpeggio.forEach((freq, idx) => {
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const startTime = audioCtx.currentTime + (idx * 0.1);
+      gain.gain.setValueAtTime(0.18, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(startTime);
+      osc.stop(startTime + 0.28);
+    } catch(e){}
+  });
+}
+
+function playCoinsSound() {
+  if (isAudioMuted) return;
+  initAudio();
+  try {
+    const osc1 = audioCtx.createOscillator();
+    const osc2 = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc1.type = 'sine';
+    osc2.type = 'sine';
+    osc1.frequency.setValueAtTime(987.77, audioCtx.currentTime); // B5
+    osc2.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.08); // E6
+    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc1.start();
+    osc2.start(audioCtx.currentTime + 0.08);
+    osc1.stop(audioCtx.currentTime + 0.3);
+    osc2.stop(audioCtx.currentTime + 0.35);
+  } catch(e){}
+}
+
+/* ==========================================================================
+   CANVAS CONFETTI PARTICLE SYSTEM
+   ========================================================================== */
+const confettiCanvas = document.getElementById('confetti-canvas');
+const ctx = confettiCanvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() {
+  confettiCanvas.width = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function launchConfetti() {
+  particles = [];
+  const colors = ['#f472b6', '#38bdf8', '#fbbf24', '#34d399', '#a78bfa', '#fb7185'];
+  for (let i = 0; i < 90; i++) {
+    particles.push({
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2 - 50,
+      vx: (Math.random() - 0.5) * 14,
+      vy: (Math.random() - 0.7) * 14,
+      size: Math.random() * 9 + 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.random() * 360,
+      rSpeed: (Math.random() - 0.5) * 10
+    });
+  }
+  requestAnimationFrame(updateConfetti);
+}
+
+function updateConfetti() {
+  ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  let alive = false;
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.35; // Gravity
+    p.rotation += p.rSpeed;
+    if (p.y < confettiCanvas.height) alive = true;
+
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate((p.rotation * Math.PI) / 180);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+    ctx.restore();
+  });
+  if (alive) requestAnimationFrame(updateConfetti);
+}
+
+/* ==========================================================================
+   ANIMATED SVG MASCOT COMPONENTS
+   ========================================================================== */
+const Mascots = {
+  // Barnaby the Wise Owl (Study Helper / Quiz Host)
+  Owl: `
+    <svg class="w-full h-full anim-float" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="60" cy="70" rx="36" ry="40" fill="#7C3AED"/>
+      <ellipse cx="60" cy="74" rx="26" ry="30" fill="#DDD6FE"/>
+      <!-- Graduation Cap -->
+      <path d="M60 18L24 32L60 46L96 32L60 18Z" fill="#1E1B4B"/>
+      <rect x="54" y="14" width="12" height="8" rx="2" fill="#F59E0B"/>
+      <path d="M88 34V52" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+      <!-- Eyes -->
+      <circle cx="46" cy="56" r="14" fill="white"/>
+      <circle cx="74" cy="56" r="14" fill="white"/>
+      <circle cx="48" cy="56" r="7" fill="#1E1B4B"/>
+      <circle cx="72" cy="56" r="7" fill="#1E1B4B"/>
+      <circle cx="50" cy="53" r="2.5" fill="white"/>
+      <circle cx="74" cy="53" r="2.5" fill="white"/>
+      <!-- Beak -->
+      <path d="M60 62L54 70H66L60 62Z" fill="#F59E0B"/>
+      <!-- Wings -->
+      <path d="M22 65C18 75 24 88 30 92" stroke="#6D28D9" stroke-width="8" stroke-linecap="round"/>
+      <path d="M98 65C102 75 96 88 90 92" stroke="#6D28D9" stroke-width="8" stroke-linecap="round"/>
+    </svg>
+  `,
+  // Pip the Happy Fox (Shopkeeper)
+  Fox: `
+    <svg class="w-full h-full anim-bounce" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Ears -->
+      <path d="M30 45L18 15L48 32Z" fill="#EA580C"/>
+      <path d="M90 45L102 15L72 32Z" fill="#EA580C"/>
+      <path d="M32 40L24 22L44 32Z" fill="#FFEDD5"/>
+      <path d="M88 40L96 22L76 32Z" fill="#FFEDD5"/>
+      <!-- Body & Head -->
+      <ellipse cx="60" cy="72" rx="38" ry="36" fill="#F97316"/>
+      <path d="M60 92C40 92 26 76 26 62C26 48 40 44 60 44C80 44 94 48 94 62C94 76 80 92 60 92Z" fill="#F97316"/>
+      <!-- White Cheeks & Chest -->
+      <path d="M60 92C45 92 34 82 34 70C45 74 52 64 60 64C68 64 75 74 86 70C86 82 75 92 60 92Z" fill="#FFEDD5"/>
+      <!-- Eyes & Nose -->
+      <circle cx="44" cy="58" r="5" fill="#1E293B"/>
+      <circle cx="76" cy="58" r="5" fill="#1E293B"/>
+      <ellipse cx="60" cy="65" rx="6" ry="4" fill="#1E293B"/>
+      <!-- Cute Blush -->
+      <ellipse cx="36" cy="64" rx="5" ry="3" fill="#F472B6" opacity="0.6"/>
+      <ellipse cx="84" cy="64" rx="5" ry="3" fill="#F472B6" opacity="0.6"/>
+    </svg>
+  `,
+  // Leo the Curious Lion (Progress Master)
+  Lion: `
+    <svg class="w-full h-full anim-bounce" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Mane -->
+      <circle cx="60" cy="60" r="46" fill="#D97706"/>
+      <!-- Face -->
+      <circle cx="60" cy="62" r="32" fill="#FCD34D"/>
+      <!-- Ears -->
+      <circle cx="34" cy="38" r="10" fill="#D97706"/>
+      <circle cx="34" cy="38" r="6" fill="#FDE68A"/>
+      <circle cx="86" cy="38" r="10" fill="#D97706"/>
+      <circle cx="86" cy="38" r="6" fill="#FDE68A"/>
+      <!-- Eyes -->
+      <circle cx="48" cy="56" r="5" fill="#78350F"/>
+      <circle cx="72" cy="56" r="5" fill="#78350F"/>
+      <circle cx="50" cy="54" r="2" fill="white"/>
+      <circle cx="74" cy="54" r="2" fill="white"/>
+      <!-- Snout -->
+      <ellipse cx="60" cy="68" rx="8" ry="6" fill="#FFFBEB"/>
+      <path d="M60 64L55 68H65L60 64Z" fill="#78350F"/>
+    </svg>
+  `,
+  // Sparkle the Bunny (Rewards Mascot)
+  Bunny: `
+    <svg class="w-full h-full anim-wiggle" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Ears -->
+      <rect x="36" y="10" width="16" height="45" rx="8" fill="#EC4899"/>
+      <rect x="40" y="14" width="8" height="36" rx="4" fill="#FCE7F3"/>
+      <rect x="68" y="10" width="16" height="45" rx="8" fill="#EC4899"/>
+      <rect x="72" y="14" width="8" height="36" rx="4" fill="#FCE7F3"/>
+      <!-- Body & Head -->
+      <ellipse cx="60" cy="74" rx="34" ry="32" fill="#F472B6"/>
+      <!-- Cheeks & Eyes -->
+      <circle cx="46" cy="70" r="4.5" fill="#831843"/>
+      <circle cx="74" cy="70" r="4.5" fill="#831843"/>
+      <ellipse cx="38" cy="76" rx="6" ry="4" fill="#FBCFE8"/>
+      <ellipse cx="82" cy="76" rx="6" ry="4" fill="#FBCFE8"/>
+      <!-- Nose -->
+      <polygon points="60,74 56,78 64,78" fill="#9D174D"/>
+    </svg>
+  `
+};
+
+/* ==========================================================================
+   APP DATA STORE & STATE MANAGEMENT
+   ========================================================================== */
+const subjects = [
+ {id:'counting',name:'Counting',emoji:'🔢',desc:'Explore numbers from 1 to 100.',lesson:'Counting means saying numbers in order. Let’s count the objects together!',questions:[['How many stars? ⭐ ⭐ ⭐','3',['2','3','4']],['What number comes after 6?','7',['5','7','9']],['What number comes before 10?','9',['8','9','11']]]},
+ {id:'addition',name:'Addition',emoji:'🍎',desc:'Put groups together to add.',lesson:'Addition means putting groups together. The plus sign (+) tells us to add.',questions:[['2 + 3 = ?','5',['4','5','6']],['4 + 1 = ?','5',['3','5','7']],['6 + 2 = ?','8',['7','8','9']]]},
+ {id:'subtraction',name:'Subtraction',emoji:'➖',desc:'Take away and find what remains.',lesson:'Subtraction means taking something away. The minus sign (−) tells us to subtract.',questions:[['5 − 2 = ?','3',['2','3','4']],['7 − 3 = ?','4',['3','4','5']],['9 − 1 = ?','8',['7','8','9']]]},
+ {id:'multiplication',name:'Multiplication',emoji:'✖️',desc:'Make equal groups and count them.',lesson:'Multiplication is a quick way to add equal groups. 3 × 2 means three groups of two.',questions:[['2 × 3 = ?','6',['5','6','8']],['4 × 2 = ?','8',['6','8','10']],['5 × 2 = ?','10',['7','10','12']]]},
+ {id:'division',name:'Division',emoji:'🍪',desc:'Share things equally.',lesson:'Division means sharing equally. 6 ÷ 2 means sharing 6 things into 2 equal groups.',questions:[['6 ÷ 2 = ?','3',['2','3','4']],['8 ÷ 4 = ?','2',['1','2','4']],['10 ÷ 2 = ?','5',['4','5','6']]]},
+ {id:'colors',name:'Colors',emoji:'🎨',desc:'Discover colors all around you.',lesson:'Colors help us describe what we see. Red, blue, yellow, green, orange, purple, pink, black, and white are common colors.',questions:[['What color is a banana?','Yellow',['Blue','Yellow','Purple']],['What color is grass usually?','Green',['Green','Pink','Black']],['Mixing red and blue paint makes which color?','Purple',['Orange','Purple','Green']]]},
+ {id:'english',name:'English',emoji:'📚',desc:'Practice letters and simple words.',lesson:'English uses 26 letters. Letters make sounds, and sounds join together to make words.',questions:[['Which letter starts the word APPLE?','A',['A','B','C']],['Which word is an animal?','Cat',['Run','Cat','Blue']],['Choose the opposite of BIG.','Small',['Tall','Small','Fast']]]}
+];
+
+const prizes = [
+ {id:'stickers',name:'Sticker Pack',emoji:'🌟',cost:50,desc:'A set of cheerful virtual stickers.'},
+ {id:'badge',name:'Shining Badge',emoji:'🏅',cost:100,desc:'A special badge for your collection.'},
+ {id:'trophy',name:'Mini Trophy',emoji:'🏆',cost:150,desc:'Celebrate your learning achievement.'},
+ {id:'avatar',name:'New Mascot Friend',emoji:'🦊',cost:200,desc:'Unlock a friendly character.'},
+ {id:'theme',name:'Rainbow Theme',emoji:'🌈',cost:300,desc:'A colorful profile theme.'},
+ {id:'super',name:'Super Learner Crown',emoji:'👑',cost:500,desc:'A top-tier virtual reward.'}
+];
+
+let data = JSON.parse(localStorage.getItem('fla-data') || 'null') || { points: 0, completed: [], redeemed: [] };
+let current = 'home';
+let activeSubject = null;
+let qIndex = 0;
+let correct = 0;
+let answered = false;
+
+function save() {
+  localStorage.setItem('fla-data', JSON.stringify(data));
+  document.getElementById('points').textContent = data.points;
+}
+
+function go(page) {
+  playClickSound();
+  current = page;
+  document.querySelectorAll('.navbtn').forEach(b => {
+    const active = b.dataset.page === page;
+    b.className = `navbtn btn-bubble font-extrabold px-4 py-2 rounded-xl text-sm sm:text-base ${
+      active ? 'bg-purple-600 text-white' : 'bg-purple-100 hover:bg-purple-200 text-purple-800'
+    }`;
+  });
+  render();
+}
+
+/* Modal Helper */
+function showModal(title, msg, icon = '🎉', confirmCb = null) {
+  const modal = document.getElementById('custom-modal');
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-msg').textContent = msg;
+  document.getElementById('modal-icon').textContent = icon;
+  const actions = document.getElementById('modal-actions');
+  actions.innerHTML = '';
+
+  if (confirmCb) {
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn-bubble bg-gray-200 text-gray-800 font-extrabold px-5 py-2.5 rounded-2xl';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.onclick = () => { playClickSound(); modal.classList.add('hidden'); };
+
+    const okBtn = document.createElement('button');
+    okBtn.className = 'btn-bubble bg-purple-600 text-white font-extrabold px-6 py-2.5 rounded-2xl';
+    okBtn.textContent = 'Yes, Redeem!';
+    okBtn.onclick = () => { playClickSound(); modal.classList.add('hidden'); confirmCb(); };
+
+    actions.appendChild(cancelBtn);
+    actions.appendChild(okBtn);
+  } else {
+    const okBtn = document.createElement('button');
+    okBtn.className = 'btn-bubble bg-purple-600 text-white font-extrabold px-6 py-2.5 rounded-2xl';
+    okBtn.textContent = 'Awesome!';
+    okBtn.onclick = () => { playClickSound(); modal.classList.add('hidden'); };
+    actions.appendChild(okBtn);
+  }
+  modal.classList.remove('hidden');
+}
+
+/* ==========================================================================
+   VIEW RENDERERS
+   ========================================================================== */
+function render() {
+  const app = document.getElementById('app');
+  if (current === 'home') app.innerHTML = homeHTML();
+  if (current === 'subject') app.innerHTML = subjectHTML();
+  if (current === 'progress') app.innerHTML = progressHTML();
+  if (current === 'shop') app.innerHTML = shopHTML();
+  if (current === 'rewards') app.innerHTML = rewardsHTML();
+  save();
+}
+
+/* Home Screen View */
+function homeHTML() {
+  return `
+    <div class="space-y-8 anim-pop">
+      <!-- Hero Banner with Mascot -->
+      <section class="cloud-card rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+        <div class="space-y-4 max-w-xl text-center md:text-left z-10">
+          <span class="inline-block bg-purple-100 text-purple-700 font-black px-4 py-1.5 rounded-full text-sm uppercase tracking-wider">
+            Welcome Super Learner! 🚀
+          </span>
+          <h1 class="text-3xl sm:text-5xl font-black text-purple-950 leading-tight">
+            Learning is an adventure! 🎉
+          </h1>
+          <p class="text-purple-700 text-base sm:text-lg font-semibold">
+            Choose a subject, learn with Barnaby the Owl, and earn stars for awesome prize rewards!
+          </p>
+          <div class="pt-2">
+            <button onclick="go('progress')" class="btn-bubble bg-amber-400 hover:bg-amber-300 text-amber-950 font-black px-6 py-3.5 rounded-2xl text-lg flex items-center gap-2 mx-auto md:mx-0">
+              <span>See My Progress</span>
+              <span>➔</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mascot SVG Frame -->
+        <div class="w-40 h-40 sm:w-48 sm:h-48 flex-shrink-0 bg-purple-100 rounded-3xl p-3 border-4 border-purple-200 shadow-inner">
+          ${Mascots.Owl}
+        </div>
+      </section>
+
+      <!-- Subject Selection Section -->
+      <section class="space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-purple-900">Choose What to Learn</h2>
+          <span class="bg-emerald-100 text-emerald-800 font-extrabold px-3.5 py-1.5 rounded-xl text-sm border border-emerald-300">
+            ✅ ${data.completed.length} / ${subjects.length} Lessons Finished
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          ${subjects.map(s => {
+            const isDone = data.completed.includes(s.id);
+            return `
+              <article onclick="openSubject('${s.id}')" class="cloud-card rounded-3xl p-5 cursor-pointer btn-bubble flex flex-col justify-between border-b-8 border-purple-300 hover:border-purple-400 group">
+                <div>
+                  <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-4xl mb-3 group-hover:scale-110 transition-transform">
+                    ${s.emoji}
+                  </div>
+                  <h3 class="text-xl font-extrabold text-purple-900 mb-1">${s.name}</h3>
+                  <p class="text-purple-600 font-bold text-sm mb-4">${s.desc}</p>
+                </div>
+                <div>
+                  <span class="inline-block w-full text-center py-2.5 rounded-xl font-black text-sm transition-colors ${
+                    isDone ? 'bg-emerald-100 text-emerald-800' : 'bg-purple-600 text-white group-hover:bg-purple-700'
+                  }">
+                    ${isDone ? '✓ Completed! Play Again' : 'Start Lesson ➔'}
+                  </span>
+                </div>
+              </article>
+            `;
+          }).join('')}
+        </div>
+      </section>
+
+      <!-- Prize Shop Teaser Banner -->
+      <section class="cloud-card rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-l-8 border-amber-400">
+        <div class="flex items-center gap-4 text-center sm:text-left">
+          <div class="text-5xl">🎁</div>
+          <div>
+            <h3 class="text-xl font-black text-purple-900">Ready for a Special Reward?</h3>
+            <p class="text-purple-600 font-bold text-sm">Use your earned stars to unlock virtual prizes in Pip's shop!</p>
+          </div>
+        </div>
+        <button onclick="go('shop')" class="btn-bubble bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-6 py-3 rounded-2xl text-base flex-shrink-0">
+          Visit Prize Shop
+        </button>
+      </section>
+    </div>
+  `;
+}
+
+/* Open Selected Subject */
+function openSubject(id) {
+  playClickSound();
+  activeSubject = subjects.find(s => s.id === id);
+  qIndex = 0;
+  correct = 0;
+  answered = false;
+  current = 'subject';
+  render();
+}
+
+/* Subject Quiz View */
+function subjectHTML() {
+  let s = activeSubject;
+  if (!s) return homeHTML();
+  const progressPercent = Math.round((qIndex / s.questions.length) * 100);
+
+  return `
+    <div class="space-y-6 anim-pop">
+      <!-- Subject Header Bar -->
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <button onclick="go('home')" class="btn-bubble bg-white text-purple-800 font-extrabold px-4 py-2 rounded-2xl text-sm border-2 border-purple-200 flex items-center gap-1">
+          <span>⬅</span> Back to Subjects
+        </button>
+        <span class="bg-purple-600 text-white font-black px-4 py-1.5 rounded-2xl text-base flex items-center gap-2">
+          <span>${s.emoji}</span> ${s.name}
+        </span>
+      </div>
+
+      <!-- Main Lesson & Quiz Cloud Card -->
+      <div class="cloud-card rounded-3xl p-6 sm:p-8 space-y-6">
+        <!-- Mini Lesson Box -->
+        <div class="bg-purple-50 border-3 border-purple-200 rounded-2xl p-5 flex flex-col sm:flex-row gap-4 items-center">
+          <div class="w-24 h-24 flex-shrink-0 bg-white rounded-2xl p-2 shadow-sm border border-purple-100">
+            ${Mascots.Owl}
+          </div>
+          <div class="space-y-1 text-center sm:text-left">
+            <h3 class="text-lg font-black text-purple-900 flex items-center justify-center sm:justify-start gap-1">
+              📖 Barnaby's Mini Lesson
+            </h3>
+            <p class="text-purple-800 font-bold text-base">${s.lesson}</p>
+            <p class="text-amber-700 font-extrabold text-xs">🌟 Tip: Take your time. You can do it!</p>
+          </div>
+        </div>
+
+        <!-- Animated Liquid Progress Bar -->
+        <div class="space-y-2">
+          <div class="flex justify-between font-black text-sm text-purple-800">
+            <span>Quiz Progress</span>
+            <span>Question ${Math.min(qIndex + 1, s.questions.length)} of ${s.questions.length}</span>
+          </div>
+          <div class="h-4 bg-purple-100 rounded-full overflow-hidden p-0.5 border border-purple-200">
+            <div class="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-500 shadow-md" style="width:${progressPercent}%"></div>
+          </div>
+        </div>
+
+        <!-- Question Render or Completion View -->
+        ${qIndex < s.questions.length ? questionHTML(s) : finishHTML(s)}
+      </div>
+    </div>
+  `;
+}
+
+/* Individual Question Card */
+function questionHTML(s) {
+  let q = s.questions[qIndex];
+  return `
+    <div class="space-y-6 pt-2">
+      <div class="text-2xl sm:text-3xl font-black text-purple-950 text-center py-4 px-2 bg-purple-100/60 rounded-2xl border-2 border-purple-200">
+        ${q[0]}
+      </div>
+
+      <!-- Multiple Choice Options -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        ${q[2].map(a => `
+          <button onclick="choose('${a.replace(/'/g, "\\'")}')" class="answer-btn btn-bubble bg-white hover:bg-purple-50 text-purple-950 font-black text-xl py-5 px-4 rounded-2xl border-4 border-purple-200 hover:border-purple-400 text-center">
+            ${a}
+          </button>
+        `).join('')}
+      </div>
+
+      <!-- Dynamic Feedback Banner -->
+      <div id="feedback" class="min-h-[50px] flex items-center justify-center font-black text-lg text-center rounded-2xl px-4 py-2"></div>
+
+      <!-- Next Button -->
+      <div class="text-center pt-2">
+        <button id="next" style="display:none" onclick="nextQuestion()" class="btn-bubble bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-lg px-8 py-3.5 rounded-2xl">
+          Next Question ➔
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/* Choice Evaluation Handler */
+function choose(answer) {
+  if (answered) return;
+  answered = true;
+  let q = activeSubject.questions[qIndex];
+  let ok = answer === q[1];
+  const fb = document.getElementById('feedback');
+
+  document.querySelectorAll('.answer-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent.trim() === q[1]) {
+      b.classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-900', 'anim-pop');
+    }
+  });
+
+  if (ok) {
+    correct++;
+    data.points += 5;
+    playCorrectSound();
+    playCoinsSound();
+    fb.className = 'min-h-[50px] flex items-center justify-center font-black text-lg text-center rounded-2xl px-4 py-2 bg-emerald-100 text-emerald-900 border-2 border-emerald-300 anim-pop';
+    fb.innerHTML = '🎉 Great job! You earned +5 stars! ⭐';
+  } else {
+    playWrongSound();
+    fb.className = 'min-h-[50px] flex items-center justify-center font-black text-lg text-center rounded-2xl px-4 py-2 bg-amber-100 text-amber-900 border-2 border-amber-300 anim-wobble';
+    fb.innerHTML = `💛 Good try! The correct answer is <strong>${q[1]}</strong>.`;
+  }
+
+  document.getElementById('next').style.display = 'inline-block';
+  save();
+}
+
+function nextQuestion() {
+  playClickSound();
+  qIndex++;
+  answered = false;
+  render();
+}
+
+/* Quiz Finish Screen */
+function finishHTML(s) {
+  let bonus = correct === s.questions.length ? 20 : 0;
+  let already = data.completed.includes(s.id);
+  
+  if (!window.finishHandled) {
+    if (!already) {
+      data.points += 10 + bonus;
+      data.completed.push(s.id);
+    }
+    window.finishHandled = true;
+    save();
+    launchConfetti();
+    playFanfareSound();
+  }
+
+  return `
+    <div class="text-center py-6 space-y-6 anim-pop">
+      <div class="w-32 h-32 mx-auto bg-amber-100 rounded-full p-2 border-4 border-amber-300">
+        ${Mascots.Owl}
+      </div>
+      
+      <div class="space-y-2">
+        <h2 class="text-3xl font-black text-purple-950">🎊 You Finished ${s.name}!</h2>
+        <p class="text-purple-700 font-bold text-lg">
+          You got <span class="text-purple-950 font-black text-xl">${correct}</span> out of <span class="text-purple-950 font-black text-xl">${s.questions.length}</span> questions right!
+        </p>
+      </div>
+
+      <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 max-w-md mx-auto font-black text-amber-900 text-base">
+        ${already ? '🌟 Lesson already completed! Great practice!' : `🎉 You earned ${10 + bonus} extra bonus stars!`}
+        ${bonus ? '<br><span class="text-emerald-600 text-sm">✨ Includes Perfect Score Bonus! (+20)</span>' : ''}
+      </div>
+
+      <button onclick="window.finishHandled=false; go('home')" class="btn-bubble bg-purple-600 hover:bg-purple-700 text-white font-black text-lg px-8 py-3.5 rounded-2xl">
+        Back to Subjects 🏠
+      </button>
+    </div>
+  `;
+}
+
+/* Progress Tracking View */
+function progressHTML() {
+  return `
+    <div class="space-y-6 anim-pop">
+      <h1 class="text-3xl font-black text-purple-950">📈 My Progress Dashboard</h1>
+
+      <section class="cloud-card rounded-3xl p-6 sm:p-8 space-y-8">
+        <!-- Mascot Banner Header -->
+        <div class="flex items-center gap-4 bg-purple-50 p-4 rounded-2xl border-2 border-purple-200">
+          <div class="w-20 h-20 flex-shrink-0 bg-white rounded-2xl p-1 shadow-sm">
+            ${Mascots.Lion}
+          </div>
+          <div>
+            <h3 class="text-lg font-black text-purple-900">Leo's Progress Report</h3>
+            <p class="text-purple-700 font-bold text-sm">Keep up the fantastic work! Every star brings you closer to new rewards.</p>
+          </div>
+        </div>
+
+        <!-- Statistics Badges -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-amber-50 border-4 border-amber-200 rounded-2xl p-5 text-center">
+            <p class="text-amber-700 font-bold text-sm uppercase tracking-wider">Total Star Balance</p>
+            <div class="text-4xl font-black text-amber-900 mt-1">⭐ ${data.points}</div>
+          </div>
+          <div class="bg-purple-50 border-4 border-purple-200 rounded-2xl p-5 text-center">
+            <p class="text-purple-700 font-bold text-sm uppercase tracking-wider">Lessons Completed</p>
+            <div class="text-4xl font-black text-purple-900 mt-1">${data.completed.length} / ${subjects.length}</div>
+          </div>
+        </div>
+
+        <!-- Detailed Subject Progress List -->
+        <div class="space-y-4">
+          <h2 class="text-xl font-black text-purple-900">Subject Masteries</h2>
+          <div class="space-y-4">
+            ${subjects.map(s => {
+              const isDone = data.completed.includes(s.id);
+              return `
+                <div class="space-y-1.5">
+                  <div class="flex justify-between items-center font-bold text-sm">
+                    <span class="text-purple-950 font-black text-base flex items-center gap-2">
+                      <span>${s.emoji}</span> ${s.name}
+                    </span>
+                    <span class="${isDone ? 'text-emerald-600 font-black' : 'text-purple-400'}">
+                      ${isDone ? '✓ Finished' : 'Not completed yet'}
+                    </span>
+                  </div>
+                  <div class="h-3.5 bg-purple-100 rounded-full overflow-hidden p-0.5 border border-purple-200">
+                    <div class="h-full bg-emerald-400 rounded-full transition-all duration-500" style="width:${isDone ? '100' : '0'}%"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <p class="text-purple-500 font-bold text-xs text-center border-t border-purple-100 pt-4">
+          💡 Earn 5 points per correct quiz answer, plus 10 bonus points for finishing a subject (plus 20 points for a perfect score!).
+        </p>
+      </section>
+    </div>
+  `;
+}
+
+/* Prize Shop View */
+function shopHTML() {
+  return `
+    <div class="space-y-6 anim-pop">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 class="text-3xl font-black text-purple-950">🎁 Prize Shop</h1>
+          <p class="text-purple-700 font-bold text-sm">Pip the Fox has awesome virtual prizes for your hard work!</p>
+        </div>
+        <div class="bg-amber-100 border-2 border-amber-300 rounded-2xl px-4 py-2 font-black text-amber-900 text-lg self-start sm:self-auto">
+          Balance: ⭐ ${data.points}
+        </div>
+      </div>
+
+      <!-- Shop Mascot Banner -->
+      <div class="cloud-card rounded-3xl p-5 flex items-center gap-4 bg-orange-50 border-orange-200">
+        <div class="w-20 h-20 flex-shrink-0 bg-white rounded-2xl p-1 shadow-sm">
+          ${Mascots.Fox}
+        </div>
+        <div>
+          <h3 class="text-lg font-black text-orange-950">Pip's Gift Counter</h3>
+          <p class="text-orange-800 font-bold text-sm">Redeemed prizes go directly into your Reward Shelf!</p>
+        </div>
+      </div>
+
+      <!-- Prize Cards Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        ${prizes.map(p => {
+          const canAfford = data.points >= p.cost;
+          return `
+            <article class="cloud-card rounded-3xl p-5 flex flex-col justify-between border-b-8 border-amber-300">
+              <div>
+                <div class="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center text-4xl mb-3">
+                  ${p.emoji}
+                </div>
+                <h3 class="text-xl font-extrabold text-purple-950 mb-1">${p.name}</h3>
+                <p class="text-purple-600 font-bold text-sm mb-4">${p.desc}</p>
+              </div>
+              <div class="space-y-3">
+                <div class="font-black text-amber-900 text-lg">
+                  ⭐ ${p.cost} stars
+                </div>
+                <button ${!canAfford ? 'disabled' : ''} onclick="redeem('${p.id}')" class="w-full btn-bubble py-3 rounded-2xl font-black text-sm ${
+                  canAfford ? 'bg-amber-400 hover:bg-amber-300 text-amber-950' : 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
+                }">
+                  ${canAfford ? 'Redeem Prize 🎉' : 'Need More Stars ⭐'}
+                </button>
+              </div>
+            </article>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/* Redeem Prize Logic */
+function redeem(id) {
+  let p = prizes.find(x => x.id === id);
+  if (data.points < p.cost) {
+    playWrongSound();
+    showModal('Need More Stars!', 'Complete more activities and quizzes to earn enough stars for this prize!', '⭐');
+    return;
+  }
+
+  showModal(
+    'Redeem Prize?',
+    `Would you like to spend ${p.cost} stars to unlock the ${p.name}?`,
+    p.emoji,
+    () => {
+      data.points -= p.cost;
+      data.redeemed.push({
+        id: p.id,
+        name: p.name,
+        emoji: p.emoji,
+        cost: p.cost,
+        date: new Date().toLocaleDateString()
+      });
+      save();
+      launchConfetti();
+      playCoinsSound();
+      playFanfareSound();
+      render();
+      showModal('Reward Redeemed! 🎉', `You unlocked the ${p.name}! Check it out in your Rewards Shelf.`, p.emoji);
+    }
+  );
+}
+
+/* My Rewards Shelf View */
+function rewardsHTML() {
+  return `
+    <div class="space-y-6 anim-pop">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-black text-purple-950">🏆 My Rewards Shelf</h1>
+          <p class="text-purple-700 font-bold text-sm">Sparkle the Bunny is keeping your collection safe!</p>
+        </div>
+      </div>
+
+      <!-- Mascot Banner -->
+      <div class="cloud-card rounded-3xl p-5 flex items-center gap-4 bg-pink-50 border-pink-200">
+        <div class="w-20 h-20 flex-shrink-0 bg-white rounded-2xl p-1 shadow-sm">
+          ${Mascots.Bunny}
+        </div>
+        <div>
+          <h3 class="text-lg font-black text-pink-950">Sparkle's Showcase</h3>
+          <p class="text-pink-800 font-bold text-sm">Look at all the awesome rewards you've collected!</p>
+        </div>
+      </div>
+
+      ${data.redeemed.length ? `
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          ${data.redeemed.map(p => `
+            <article class="cloud-card rounded-3xl p-5 flex items-center gap-4 border-b-8 border-pink-300">
+              <div class="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center text-4xl flex-shrink-0">
+                ${p.emoji}
+              </div>
+              <div>
+                <h3 class="text-lg font-extrabold text-purple-950">${p.name}</h3>
+                <span class="inline-block bg-emerald-100 text-emerald-800 font-extrabold text-xs px-2.5 py-0.5 rounded-full mt-1">
+                  ✓ Unlocked
+                </span>
+                <p class="text-purple-400 font-bold text-xs mt-1">${p.cost} stars · ${p.date}</p>
+              </div>
+            </article>
+          `).join('')}
+        </div>
+      ` : `
+        <div class="cloud-card rounded-3xl p-8 text-center space-y-4">
+          <div class="text-6xl">🎈</div>
+          <h3 class="text-2xl font-black text-purple-900">Your Reward Shelf is Waiting!</h3>
+          <p class="text-purple-600 font-bold max-w-md mx-auto">
+            You haven't unlocked any prizes yet. Visit the Prize Shop to turn your hard-earned stars into fun rewards!
+          </p>
+          <button onclick="go('shop')" class="btn-bubble bg-purple-600 hover:bg-purple-700 text-white font-black px-6 py-3 rounded-2xl text-base">
+            Go to Prize Shop ➔
+          </button>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+// Initial Page Render & Sound Init Handler
+window.onload = function() {
+  render();
+  document.body.addEventListener('click', function() {
+    initAudio();
+  }, { once: true });
+};
+</script>
+</body>
+</html>
